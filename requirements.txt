@@ -1,8 +1,0 @@
-bidict==0.22.0
-dnspython==2.2.1
-eventlet==0.33.2
-greenlet==2.0.1
-netifaces==0.10.6
-python-engineio==4.3.4
-python-socketio==5.7.2
-six==1.16.0
