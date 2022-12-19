@@ -9,7 +9,7 @@ const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function(ws) {
-  console.log("client joined.");
+  console.log("Connection from " + ws._socket.remoteAddress + ":" + ws._socket.remotePort + " established.");
 
   ws.on('message', function(data) {
     if (typeof(data) === "string") {
@@ -27,5 +27,5 @@ wss.on('connection', function(ws) {
 });
 
 server.listen(port, function() {
-  console.log(`Listening on http://localhost:${port}`);
+  console.log(`Listening on port:${port}`);
 });
