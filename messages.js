@@ -4,10 +4,13 @@ const strutils = require('./string.js');
 
 MESSAGE_TYPE_SUBSCRIBE = 0;
 MESSAGE_TYPE_UNSUBSCRIBE = 1;
-MESSAGE_TYPE_HOLOGRID_COMMUNICATION = 2;
+MESSAGE_PUBLISH = 2;
+
 
 class Message extends Data {
     type = 0
+    sender = null
+    destination = null
     payload = null
 
     static toJSON() {
@@ -15,13 +18,17 @@ class Message extends Data {
     }
 
     static from(data) {
-        return Message.create({ 'type': data.type, 'payload': data.payload });
+        return Message.create(
+            {
+                'type': data.type,
+                'sender': data.sender,
+                'destination': data.destination,
+                'payload': data.payload
+            }
+        );
     }
 }
 
-class Channel extends Data {
-    name = ""
-}
 
 function decode(data) {
  
@@ -41,10 +48,9 @@ function decode(data) {
 }
 
 module.exports = {
-    MESSAGE_TYPE_SUBSCRIBE: MESSAGE_TYPE_SUBSCRIBE,
-    MESSAGE_TYPE_UNSUBSCRIBE: MESSAGE_TYPE_UNSUBSCRIBE,
-    MESSAGE_TYPE_HOLOGRID_COMMUNICATION: MESSAGE_TYPE_HOLOGRID_COMMUNICATION,
-    Message: Message,
-    Channel: Channel,
-    decode: decode
+    MESSAGE_TYPE_SUBSCRIBE,
+    MESSAGE_TYPE_UNSUBSCRIBE,
+    MESSAGE_PUBLISH,
+    Message,
+    decode
 }
