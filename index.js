@@ -36,15 +36,15 @@ wss.on('connection', function(ws) {
     var msg = message.decode(data);
 
     if(msg.type == message.MESSAGE_TYPE_SUBSCRIBE) {
-      console.log('subscribe', msg);
+      console.log('Subscribe', msg);
       channelManager.subscribe(msg.destination, client);
     }
     else if(msg.type == message.MESSAGE_TYPE_UNSUBSCRIBE) {
-      console.log('unsubscribe', msg);
+      console.log('Unsubscribe', msg);
       channelManager.unsubscribe(msg.destination, client);
     }
     else if(msg.type == message.MESSAGE_PUBLISH) {
-      console.log('broadcast', msg.destination, msg.payload);
+      console.log('Broadcast', msg.destination, msg.payload);
       channelManager.broadcastToChannel(msg.destination, msg.payload);
     }
     else {
