@@ -63,7 +63,12 @@ wss.on('connection', function(ws) {
     /* Get channel */
     var channel = exchange.getChannel(msg.channel);
     if(!channel) {
-      channel = exchange.addChannel(msg.channel);
+      try {
+        channel = exchange.addChannel(msg.channel);
+      }
+      catch(err) {
+        console.log(err);
+      }
     }
 
     /* Process the message */
@@ -82,8 +87,8 @@ wss.on('connection', function(ws) {
     }
 
     if(msg.type == message.CHANNEL_PUBLISH) {
-      console.log('Broadcast', msg.channel, msg.message);
-      exchange.broadcastToChannel(msg.destination, msg.payload);
+      console.log('Broadcast -', 'Channel:', msg.channel, msg.message);
+      exchange.broadcastToChannel(msg.channel, msg.payload);
       return;
     }
 
@@ -94,10 +99,15 @@ wss.on('connection', function(ws) {
     // Each exchange has a channel manager, which has a list of clients.
     // When a client disconnects, we need to remove them from all channels.
 
-    // Foreach exchange
     for (const [exchange_uuid, exchange] of Object.entries(exchangeManager.exchanges)) {
+      //console.log('close', exchange);
+
       for(const [channel_uuid, channel] of Object.entries(exchange.channel_mgr.channels)) {
+        console.log('channel', channel);
+
         for (const [client_uuid, client] of Object.entries(channel.clients)) {
+          console.log('client', client);
+
           if(client === ws) {
             console.log('Removing client', client_uuid);
             channel.removeClient(client_uuid);

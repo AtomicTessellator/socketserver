@@ -8,6 +8,11 @@ class Exchange {
     }
   
     addChannel(channel_uuid) {
+
+      if(channel_uuid == null) {
+        throw new Error("Channel UUID cannot be null or undefined");
+      }
+
       this.channel_mgr.addChannel(channel_uuid);
     }
   
