@@ -23,12 +23,13 @@ class WSSMessage extends Data {
     }
 
     static from(data) {
-        return Message.create(
+        return WSSMessage.create(
             {
                 'type': data.type,
+                'exchange': data.exchange,
                 'sender': data.sender,
-                'destination': data.destination,
-                'payload': data.payload
+                'channel': data.channel,
+                'message': data.message
             }
         );
     }

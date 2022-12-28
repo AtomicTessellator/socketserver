@@ -81,7 +81,7 @@ wss.on('connection', function(ws) {
       return;
     }
 
-    if(msg.type == message.MESSAGE_PUBLISH) {
+    if(msg.type == message.CHANNEL_PUBLISH) {
       console.log('Broadcast', msg.channel, msg.message);
       exchange.broadcastToChannel(msg.destination, msg.payload);
       return;
@@ -93,13 +93,19 @@ wss.on('connection', function(ws) {
   ws.on('close', function() {
     // Each exchange has a channel manager, which has a list of clients.
     // When a client disconnects, we need to remove them from all channels.
-    exchangeManager.exchanges.forEach(function(exchange) {
-      exchange.channel_mgr.clients.forEach(function(client) {
-        exchange.channel_mgr.unsubscribe(client);
-      });
-    });
-  });
 
+    // Foreach exchange
+    for (const [exchange_uuid, exchange] of Object.entries(exchangeManager.exchanges)) {
+      for(const [channel_uuid, channel] of Object.entries(exchange.channel_mgr.channels)) {
+        for (const [client_uuid, client] of Object.entries(channel.clients)) {
+          if(client === ws) {
+            console.log('Removing client', client_uuid);
+            channel.removeClient(client_uuid);
+          }
+        }
+      }
+    }
+  });
 });
 
 server.listen(port, function() {
