@@ -88,7 +88,7 @@ wss.on('connection', function(ws) {
 
     if(msg.type == message.CHANNEL_PUBLISH) {
       console.log('Broadcast -', 'Channel:', msg.channel, msg.message);
-      exchange.broadcastToChannel(msg.channel, msg.message);
+      exchange.broadcastToChannel(msg.channel, msg);
       return;
     }
 
