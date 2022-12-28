@@ -33,6 +33,11 @@ class Manager {
   }
 
   addChannel(uuid) {
+
+    if(uuid == null) {
+      throw new Error("Channel UUID cannot be null or undefined");
+    }
+
     var channel = new Channel(uuid);
     this.channels[uuid] = channel;
     return channel;

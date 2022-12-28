@@ -88,7 +88,7 @@ wss.on('connection', function(ws) {
 
     if(msg.type == message.CHANNEL_PUBLISH) {
       console.log('Broadcast -', 'Channel:', msg.channel, msg.message);
-      exchange.broadcastToChannel(msg.channel, msg.payload);
+      exchange.broadcastToChannel(msg.channel, msg.message);
       return;
     }
 
@@ -103,10 +103,8 @@ wss.on('connection', function(ws) {
       //console.log('close', exchange);
 
       for(const [channel_uuid, channel] of Object.entries(exchange.channel_mgr.channels)) {
-        console.log('channel', channel);
 
         for (const [client_uuid, client] of Object.entries(channel.clients)) {
-          console.log('client', client);
 
           if(client === ws) {
             console.log('Removing client', client_uuid);
