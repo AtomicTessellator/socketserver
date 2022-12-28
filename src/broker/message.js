@@ -1,17 +1,22 @@
 const { Data } = require('dataclass');
-const strutils = require('./string.js');
+const strutils = require('../utils/string.js');
 
 
-MESSAGE_TYPE_SUBSCRIBE = 0;
-MESSAGE_TYPE_UNSUBSCRIBE = 1;
-MESSAGE_PUBLISH = 2;
+CHANNEL_SUBSCRIBE = 0;
+CHANNEL_UNSUBSCRIBE = 1;
+CHANNEL_PUBLISH = 2;
 
 
-class Message extends Data {
+class WSSMessage extends Data {
+
     type = 0
+
+    exchange = null
+
     sender = null
-    destination = null
-    payload = null
+    channel = null
+
+    message = null
 
     static toJSON() {
         return JSON.stringify(this);
@@ -44,13 +49,13 @@ function decode(data) {
 
     var decoded = JSON.parse(message);
 
-    return Message.from(decoded);
+    return WSSMessage.from(decoded);
 }
 
 module.exports = {
-    MESSAGE_TYPE_SUBSCRIBE,
-    MESSAGE_TYPE_UNSUBSCRIBE,
-    MESSAGE_PUBLISH,
-    Message,
+    CHANNEL_SUBSCRIBE,
+    CHANNEL_UNSUBSCRIBE,
+    CHANNEL_PUBLISH,
+    WSSMessage,
     decode
 }

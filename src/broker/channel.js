@@ -25,15 +25,17 @@ class Channel {
     });
   }
 }
-  
 
-class ChannelManager {
+
+class Manager {
   constructor() {
     this.channels = {};
   }
 
   addChannel(uuid) {
-    this.channels[uuid] = new Channel(uuid);
+    var channel = new Channel(uuid);
+    this.channels[uuid] = channel;
+    return channel;
   }
 
   removeChannel(uuid) {
@@ -86,5 +88,5 @@ class ChannelManager {
 
 module.exports = {
   Channel,
-  ChannelManager
+  Manager
 };
