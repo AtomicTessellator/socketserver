@@ -2,61 +2,19 @@ const { Data } = require('dataclass');
 const strutils = require('../utils/string.js');
 
 
-CHANNEL_SUBSCRIBE = 0;
-CHANNEL_UNSUBSCRIBE = 1;
-CHANNEL_PUBLISH = 2;
+// 0 - 1000 - reserved for WSServer
+CHANNEL_SUBSCRIBE = 0       // SocketServer subscribes to a channel
+CHANNEL_UNSUBSCRIBE = 1     // SocketServer unsubscribes from a channel
+CHANNEL_PUBLISH = 2         // Publish a message to a channel
 
-
-class WSSMessage extends Data {
-
-    type = 0
-
-    exchange = null
-
-    sender = null
-    channel = null
-
-    message = null
-
-    static toJSON() {
-        return JSON.stringify(this);
-    }
-
-    static from(data) {
-        return WSSMessage.create(
-            {
-                'type': data.type,
-                'exchange': data.exchange,
-                'sender': data.sender,
-                'channel': data.channel,
-                'message': data.message
-            }
-        );
-    }
-}
-
-
-function decode(data) {
- 
-    /* Type Checking */
-    var message = '';
-
-    if (typeof(data) === "string") {
-      message = data;
-    } else {
-      // Raw binary data
-      message = strutils.atos(data);
-    }
-
-    var decoded = JSON.parse(message);
-
-    return WSSMessage.from(decoded);
-}
+// 1001 - 2000 - reserved for Hologrid
+HOLOGRID_RESET = 1001
+HOLOGRID_CREATE_SPHERE = 1002
 
 module.exports = {
     CHANNEL_SUBSCRIBE,
     CHANNEL_UNSUBSCRIBE,
     CHANNEL_PUBLISH,
-    WSSMessage,
-    decode
+    HOLOGRID_RESET,
+    HOLOGRID_CREATE_SPHERE
 }

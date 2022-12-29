@@ -52,19 +52,19 @@ wss.on('connection', function(ws) {
  
   ws.on('message', function(data) {
 
-    var msg = message.decode(data);
+    var msg = JSON.parse(data);
 
     /* Get exchange */
-    var exchange = exchangeManager.getExchange(msg.exchange);
+    var exchange = exchangeManager.getExchange(msg['exchange']);
     if(!exchange) {
-      exchange = exchangeManager.addExchange(msg.exchange);
+      exchange = exchangeManager.addExchange(msg['exchange']);
     }
 
     /* Get channel */
-    var channel = exchange.getChannel(msg.channel);
+    var channel = exchange.getChannel(msg['channel']);
     if(!channel) {
       try {
-        channel = exchange.addChannel(msg.channel);
+        channel = exchange.addChannel(msg['channel']);
       }
       catch(err) {
         console.log(err);
@@ -74,25 +74,25 @@ wss.on('connection', function(ws) {
     /* Process the message */
     var client = getClient();
 
-    if(msg.type == message.CHANNEL_SUBSCRIBE) {
+    if(msg['type'] == message.CHANNEL_SUBSCRIBE) {
       console.log('Subscribe', msg);
-      exchange.subscribeToChannel(msg.channel, client);
+      exchange.subscribeToChannel(msg['channel'], client);
       return;
     }
     
-    if(msg.type == message.MESSAGE_TYPE_UNSUBSCRIBE) {
+    if(msg['type'] == message.MESSAGE_TYPE_UNSUBSCRIBE) {
       console.log('Unsubscribe', msg);
-      exchange.unsubscribeFromChannel(msg.channel, client);
+      exchange.unsubscribeFromChannel(msg['channel'], client);
       return;
     }
 
-    if(msg.type == message.CHANNEL_PUBLISH) {
-      console.log('Broadcast -', 'Channel:', msg.channel, msg.message);
-      exchange.broadcastToChannel(msg.channel, msg);
+    if(msg['type'] > 1000) {
+      console.log('Broadcast -', msg);
+      exchange.broadcastToChannel(msg['channel'], msg);
       return;
     }
 
-    console.log("Unknown message type: " + msg.type);
+    console.log("Unknown message type: " + msg['type']);
   });
 
   ws.on('close', function() {
