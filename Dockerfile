@@ -1,22 +1,17 @@
-FROM python:3.11-slim-bullseye
+# Dockerfile for nodejs app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    python3-dev \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:latest
 
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-RUN pip install --upgrade pip setuptools wheel
+# Install app dependencies
+COPY package.json /usr/src/app/
+RUN npm install
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+# Bundle app source
+COPY src/ /usr/src/app/
 
-RUN mkdir /app
-COPY server.py /app
-
-WORKDIR /app
-ENTRYPOINT [ "python3", "server.py" ]
+EXPOSE 8080
+CMD [ "node", "index.js" ]
