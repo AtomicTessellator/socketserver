@@ -1,3 +1,4 @@
+
 function atos(arr) {
     for (var i=0, l=arr.length, s='', c; c = arr[i++];)
         s += String.fromCharCode(

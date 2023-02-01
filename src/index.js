@@ -21,9 +21,9 @@ const wss = new WebSocket.Server({ server });
 │                    │ e.g. a Hologrid       │  │ or an AIPod         │  │
 │                    └───────────────────────┘  └─────────────────────┘  │
 │                                                                        │
-│                   ┌────────────────────────────────────┐               │
-│  Messages         | Indivial messages sent to channels |               │
-│                   └────────────────────────────────────┘               │
+│                    ┌────────────────────────────────────┐              │
+│  Messages          | Indivial messages sent to channels |              │
+│                    └────────────────────────────────────┘              │
 │                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 */
@@ -36,11 +36,10 @@ const exchangeManager = new exchange.ExchangeManager();
 wss.on('connection', function(ws) {
   console.log(
     `Connection from ${ws._socket.remoteAddress}:` + 
-    `${ws._socket.remotePort} established.`);
+    `${ws._socket.remotePort} established.`
+  );
 
   function getClient() {
-    // This is a weird way to get the client object,
-    // but it works.
     var client = null;
     wss.clients.forEach(function each(c) {
       if (c === ws) {
@@ -75,24 +74,30 @@ wss.on('connection', function(ws) {
     var client = getClient();
 
     if(msg['type'] == message.CHANNEL_SUBSCRIBE) {
-      console.log('Subscribe', msg);
+
+      console.log(`Subscribe ${msg}`);
+
       exchange.subscribeToChannel(msg['channel'], client);
       return;
     }
     
     if(msg['type'] == message.MESSAGE_TYPE_UNSUBSCRIBE) {
-      console.log('Unsubscribe', msg);
+
+      console.log(`Unsubscribe ${msg}`);
+
       exchange.unsubscribeFromChannel(msg['channel'], client);
       return;
     }
 
     if(msg['type'] > 1000) {
-      console.log('Broadcast -', msg);
+
+      console.log(`Broadcast ${msg}`);
+
       exchange.broadcastToChannel(msg['channel'], msg);
       return;
     }
 
-    console.log("Unknown message type: " + msg['type']);
+    console.log(`Unknown message type: ${msg['type']}`);
   });
 
   ws.on('close', function() {
@@ -100,14 +105,20 @@ wss.on('connection', function(ws) {
     // When a client disconnects, we need to remove them from all channels.
 
     for (const [exchange_uuid, exchange] of Object.entries(exchangeManager.exchanges)) {
-      //console.log('close', exchange);
 
       for(const [channel_uuid, channel] of Object.entries(exchange.channel_mgr.channels)) {
 
         for (const [client_uuid, client] of Object.entries(channel.clients)) {
 
           if(client === ws) {
-            console.log('Removing client', client_uuid);
+
+            console.log(
+              `Removing client - ` +
+              `Exchange: ${exchange_uuid}, ` +
+              `Channel: ${channel_uuid}, ` +
+              `Client: ${client_uuid}`
+            );
+
             channel.removeClient(client_uuid);
           }
         }
