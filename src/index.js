@@ -1,96 +1,96 @@
-const express = require('express');
-const { createServer } = require('http');
-const WebSocket = require('ws');
+/* eslint-disable no-unused-vars */
+/*
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │                                                                        │
+  │                    ┌────────────────────────────────────────────────┐  │
+  │  Exchange          │  A collection of channels, each Insilico Lab   │  │
+  │                    │  is an exchange.                               │  │
+  │                    └────────────────────────────────────────────────┘  │
+  │                                                                        │
+  │                    ┌───────────────────────┐  ┌─────────────────────┐  │
+  │  Channel           │                       │  │                     │  │
+  │  A channel is a    │                       │  │                     │  │
+  │  unqiue GameObject │                       │  │                     │  │
+  │                    │ e.g. a Hologrid       │  │ or an AIPod         │  │
+  │                    └───────────────────────┘  └─────────────────────┘  │
+  │                                                                        │
+  │                    ┌────────────────────────────────────┐              │
+  │  Messages          | Indivial messages sent to channels |              │
+  │                    └────────────────────────────────────┘              │
+  │                                                                        │
+  └────────────────────────────────────────────────────────────────────────┘
+*/
+
+import express from 'express';
+import {createServer} from 'http';
+import {Server} from 'ws';
+import {ExchangeManager} from './broker/exchange.js';
+import {CHANNEL_SUBSCRIBE, MESSAGE_TYPE_UNSUBSCRIBE} from './broker/message.js';
+
 const app = express();
 const port = 5000;
 const server = createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new Server({server});
+const exchangeManager = new ExchangeManager();
 
-/*
-┌────────────────────────────────────────────────────────────────────────┐
-│                                                                        │
-│                    ┌────────────────────────────────────────────────┐  │
-│  Exchange          │  A collection of channels, each Insilico Lab   │  │
-│                    │  is an exchange.                               │  │
-│                    └────────────────────────────────────────────────┘  │
-│                                                                        │
-│                    ┌───────────────────────┐  ┌─────────────────────┐  │
-│  Channel           │                       │  │                     │  │
-│  A channel is a    │                       │  │                     │  │
-│  unqiue GameObject │                       │  │                     │  │
-│                    │ e.g. a Hologrid       │  │ or an AIPod         │  │
-│                    └───────────────────────┘  └─────────────────────┘  │
-│                                                                        │
-│                    ┌────────────────────────────────────┐              │
-│  Messages          | Indivial messages sent to channels |              │
-│                    └────────────────────────────────────┘              │
-│                                                                        │
-└────────────────────────────────────────────────────────────────────────┘
-*/
-
-const exchange = require('./broker/exchange.js');
-const message = require('./broker/message.js');
-const exchangeManager = new exchange.ExchangeManager();
-
+/**
+ * getClient - Get the client from the websocket server.
+ * @param {WebSocket} ws The websocket client.
+ * @return {WebSocket} Returns the value of x for the equation.
+ */
+function getClient(ws) {
+  let client = null;
+  wss.clients.forEach(function each(c) {
+    if (c === ws) {
+      client = c;
+    }
+  });
+  return client;
+}
 
 wss.on('connection', function(ws) {
   console.log(
-    `Connection from ${ws._socket.remoteAddress}:` + 
-    `${ws._socket.remotePort} established.`
+      `Connection from ${ws._socket.remoteAddress}:` +
+    `${ws._socket.remotePort} established.`,
   );
 
-  function getClient() {
-    var client = null;
-    wss.clients.forEach(function each(c) {
-      if (c === ws) {
-        client = c;
-      }
-    });
-    return client;
-  }
- 
   ws.on('message', function(data) {
-
-    var msg = JSON.parse(data);
+    const msg = JSON.parse(data);
 
     /* Get exchange */
-    var exchange = exchangeManager.getExchange(msg['exchange']);
-    if(!exchange) {
+    let exchange = exchangeManager.getExchange(msg['exchange']);
+    if (!exchange) {
       exchange = exchangeManager.addExchange(msg['exchange']);
     }
 
     /* Get channel */
-    var channel = exchange.getChannel(msg['channel']);
-    if(!channel) {
+    let channel = exchange.getChannel(msg['channel']);
+    if (!channel) {
       try {
         channel = exchange.addChannel(msg['channel']);
-      }
-      catch(err) {
+      } catch (err) {
         console.log(err);
       }
     }
 
     /* Process the message */
-    var client = getClient();
+    const client = getClient();
 
-    if(msg['type'] == message.CHANNEL_SUBSCRIBE) {
-
+    if (msg['type'] == CHANNEL_SUBSCRIBE) {
       console.log(`Subscribe ${msg}`);
 
       exchange.subscribeToChannel(msg['channel'], client);
       return;
     }
-    
-    if(msg['type'] == message.MESSAGE_TYPE_UNSUBSCRIBE) {
 
+    if (msg['type'] == MESSAGE_TYPE_UNSUBSCRIBE) {
       console.log(`Unsubscribe ${msg}`);
 
       exchange.unsubscribeFromChannel(msg['channel'], client);
       return;
     }
 
-    if(msg['type'] > 1000) {
-
+    if (msg['type'] > 1000) {
       console.log(`Broadcast ${msg}`);
 
       exchange.broadcastToChannel(msg['channel'], msg);
@@ -104,19 +104,16 @@ wss.on('connection', function(ws) {
     // Each exchange has a channel manager, which has a list of clients.
     // When a client disconnects, we need to remove them from all channels.
 
-    for (const [exchange_uuid, exchange] of Object.entries(exchangeManager.exchanges)) {
-
-      for(const [channel_uuid, channel] of Object.entries(exchange.channel_mgr.channels)) {
-
-        for (const [client_uuid, client] of Object.entries(channel.clients)) {
-
-          if(client === ws) {
-
+    for (const [_, exch] of Object.entries(exchangeManager.exchanges)) {
+      const channels = exch.channel_mgr.channels;
+      for (const [__, channel] of Object.entries(channels)) {
+        for (const [___, client] of Object.entries(channel.clients)) {
+          if (client === ws) {
             console.log(
-              `Removing client - ` +
-              `Exchange: ${exchange_uuid}, ` +
-              `Channel: ${channel_uuid}, ` +
-              `Client: ${client_uuid}`
+                `Removing client - ` +
+                `Exchange: ${exch.uuid}, ` +
+                `Channel: ${channel.uuid}, ` +
+                `Client: ${client.uuid}`,
             );
 
             channel.removeClient(client_uuid);
