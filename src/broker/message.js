@@ -1,10 +1,4 @@
 
-CHANNEL_SUBSCRIBE = 0; // SocketServer subscribes to a channel
-CHANNEL_UNSUBSCRIBE = 1; // SocketServer unsubscribes from a channel
-CHANNEL_PUBLISH = 2; // Publish a message to a channel
-
-module.exports = {
-  CHANNEL_SUBSCRIBE,
-  CHANNEL_UNSUBSCRIBE,
-  CHANNEL_PUBLISH,
-};
+export const CHANNEL_SUBSCRIBE = 0;     // SocketServer subscribes to a channel
+export const CHANNEL_UNSUBSCRIBE = 1;   // SocketServer unsubscribes from a channel
+export const CHANNEL_PUBLISH = 2;       // Publish a message to a channel

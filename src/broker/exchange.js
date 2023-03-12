@@ -7,7 +7,7 @@ import Channel from './channel.js';
  * @property {string} uuid The exchange UUID.
  * @property {Manager} channel_mgr The channel manager.
  */
-class Exchange {
+export class Exchange {
   /**
    * @constructor
    * @param {string} uuid
@@ -70,7 +70,7 @@ class Exchange {
  * @classdesc A manager for exchanges.
  * @property {object} exchanges The exchanges.
  */
-class ExchangeManager {
+export class ExchangeManager {
   /**
    * @constructor
    */
@@ -104,8 +104,3 @@ class ExchangeManager {
     return this.exchanges[uuid];
   }
 }
-
-export default {
-  Exchange,
-  ExchangeManager,
-};

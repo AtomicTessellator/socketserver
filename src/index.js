@@ -1,15 +1,15 @@
 /* eslint-disable no-unused-vars */
 
 import express from 'express';
-import {createServer} from 'http';
-import {Server} from 'ws';
-import {ExchangeManager} from './broker/exchange.js';
-import {CHANNEL_SUBSCRIBE, MESSAGE_TYPE_UNSUBSCRIBE} from './broker/message.js';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { CHANNEL_SUBSCRIBE } from './broker/message.js';
+import { ExchangeManager } from './broker/exchange.js';
 
 const app = express();
 const port = 5000;
 const server = createServer(app);
-const wss = new Server({server});
+const wss = new WebSocketServer({server});
 const exchangeManager = new ExchangeManager();
 
 /**

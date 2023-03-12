@@ -1,4 +1,4 @@
-import {OPEN} from 'ws';
+import { WebSocket } from 'ws';
 
 /**
  * @class Channel
@@ -38,7 +38,7 @@ class Channel {
    */
   broadcast(message) {
     this.clients.forEach((client) => {
-      if (client.readyState === OPEN) {
+      if (client.readyState ===  WebSocket.OPEN) {
         const json = JSON.stringify(message);
         console.log(`Broadcasting ${json}`);
         client.send(json);
