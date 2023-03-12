@@ -4,7 +4,7 @@ IMAGE_NAME = socketserver
 IMAGE_TAG = latest
 
 ecr-auth:
-	aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 445057328137.dkr.ecr.us-west-2.amazonaws.com
+	aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $(DOCKER_REGISTRY)
 
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
