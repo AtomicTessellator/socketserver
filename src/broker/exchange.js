@@ -14,7 +14,7 @@ export class Exchange {
    */
   constructor(uuid) {
     this.uuid = uuid;
-    this.channel_mgr = new channel.Manager();
+    this.channel_mgr = new Channel.Manager();
   }
 
   /**

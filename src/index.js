@@ -3,37 +3,22 @@
 import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import { CHANNEL_SUBSCRIBE } from './broker/message.js';
+import { CHANNEL_SUBSCRIBE, CHANNEL_UNSUBSCRIBE } from './broker/message.js';
 import { ExchangeManager } from './broker/exchange.js';
 
 const app = express();
 const port = 5000;
 const server = createServer(app);
-const wss = new WebSocketServer({server});
+const wss = new WebSocketServer({ server });
 const exchangeManager = new ExchangeManager();
 
-/**
- * getClient - Get the client from the websocket server.
- * @param {WebSocket} ws The websocket client.
- * @return {WebSocket} Returns the value of x for the equation.
- */
-function getClient(ws) {
-  let client = null;
-  wss.clients.forEach(function each(c) {
-    if (c === ws) {
-      client = c;
-    }
-  });
-  return client;
-}
-
-wss.on('connection', function(ws) {
+wss.on('connection', function (ws) {
   console.log(
-      `Connection from ${ws._socket.remoteAddress}:` +
+    `Connection from ${ws._socket.remoteAddress}:` +
     `${ws._socket.remotePort} established.`,
   );
 
-  ws.on('message', function(data) {
+  ws.on('message', function (data) {
     const msg = JSON.parse(data);
 
     /* Get exchange */
@@ -49,28 +34,29 @@ wss.on('connection', function(ws) {
         channel = exchange.addChannel(msg['channel']);
       } catch (err) {
         console.log(err);
+        return;
       }
     }
 
     /* Process the message */
-    const client = getClient();
+    const client = ws;
 
     if (msg['type'] == CHANNEL_SUBSCRIBE) {
-      console.log(`Subscribe ${msg}`);
+      console.log(`Subscribe ${data}`);
 
       exchange.subscribeToChannel(msg['channel'], client);
       return;
     }
 
-    if (msg['type'] == MESSAGE_TYPE_UNSUBSCRIBE) {
-      console.log(`Unsubscribe ${msg}`);
+    if (msg['type'] == CHANNEL_UNSUBSCRIBE) {
+      console.log(`Unsubscribe ${data}`);
 
       exchange.unsubscribeFromChannel(msg['channel'], client);
       return;
     }
 
-    if (msg['type'] > 1000) {
-      console.log(`Broadcast ${msg}`);
+    if (msg['type'] >= 1000) {
+      console.log(`Broadcast`, JSON.stringify(msg));
 
       exchange.broadcastToChannel(msg['channel'], msg);
       return;
@@ -79,7 +65,7 @@ wss.on('connection', function(ws) {
     console.log(`Unknown message type: ${msg['type']}`);
   });
 
-  ws.on('close', function() {
+  ws.on('close', function () {
     // Each exchange has a channel manager, which has a list of clients.
     // When a client disconnects, we need to remove them from all channels.
 
@@ -89,13 +75,13 @@ wss.on('connection', function(ws) {
         for (const [___, client] of Object.entries(channel.clients)) {
           if (client === ws) {
             console.log(
-                `Removing client - ` +
-                `Exchange: ${exch.uuid}, ` +
-                `Channel: ${channel.uuid}, ` +
-                `Client: ${client.uuid}`,
+              `Removing client - ` +
+              `Exchange: ${exch.uuid}, ` +
+              `Channel: ${channel.uuid}, ` +
+              `Client: ${client.uuid}`,
             );
 
-            channel.removeClient(client_uuid);
+            channel.removeClient(client);
           }
         }
       }
@@ -103,6 +89,6 @@ wss.on('connection', function(ws) {
   });
 });
 
-server.listen(port, function() {
+server.listen(port, function () {
   console.log(`Listening on port:${port}`);
 });
