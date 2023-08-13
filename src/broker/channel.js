@@ -38,7 +38,7 @@ class Channel {
    */
   broadcast(message) {
     this.clients.forEach((client) => {
-      if (client.readyState ===  WebSocket.OPEN) {
+      if (client.readyState === WebSocket.OPEN) {
         const json = JSON.stringify(message);
         console.log(`Broadcasting ${json}`);
         client.send(json);
@@ -66,7 +66,7 @@ class Manager {
    * @throws {Error}
    */
   addChannel(uuid) {
-    if (uuid == null) {
+    if (uuid === null || uuid === undefined) {
       throw new Error('Channel UUID cannot be null or undefined');
     }
 
