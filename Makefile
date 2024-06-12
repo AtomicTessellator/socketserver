@@ -3,19 +3,17 @@ ENV ?= dev
 
 # USAGE: make build-push ENV=prod
 
-# Define registry for different environments
-DOCKER_REGISTRY_DEV = harbor.atomic.t/atomict
-DOCKER_REGISTRY_PROD = harbor.atomictessellator.com/atomict-private
-
 # Select the appropriate registry based on the environment
 ifeq ($(ENV),prod)
-  DOCKER_REGISTRY = $(DOCKER_REGISTRY_PROD)
+  IMAGE_NAME = socketserver
 else
-  DOCKER_REGISTRY = $(DOCKER_REGISTRY_DEV)
+  IMAGE_NAME = qf_socketserver
 endif
 
-IMAGE_NAME = socketserver
+DOCKER_REGISTRY = docker.io/atomictessellator
 IMAGE_TAG = latest
+DOCKERFILE = Dockerfile
+
 
 # Define the login target
 login:
