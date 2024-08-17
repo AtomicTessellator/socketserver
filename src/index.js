@@ -43,26 +43,26 @@ wss.on('connection', function (ws) {
 
     if (msg['type'] == CHANNEL_SUBSCRIBE) {
       console.log(`Subscribe ${data}`);
-
       exchange.subscribeToChannel(msg['channel'], client);
-      return;
     }
-
-    if (msg['type'] == CHANNEL_UNSUBSCRIBE) {
+    else if (msg['type'] == CHANNEL_UNSUBSCRIBE) {
       console.log(`Unsubscribe ${data}`);
-
       exchange.unsubscribeFromChannel(msg['channel'], client);
-      return;
     }
-
-    if (msg['type'] >= 1000) {
-      console.log(`Broadcast`, JSON.stringify(msg));
-
+    else if (msg['type'] >= 1000) {
       exchange.broadcastToChannel(msg['channel'], msg);
-      return;
+      // We also broadcast to the channel with the same UUID as the exchange
+      // itself.
+      // In the AtomicT backend and frontend an Exchange is a "Project"
+      // and a channel is an individual object. If a user wants to subscribe
+      // to changes to an indivdual object, they subscribe to the object's
+      // channel. If they want to subscribe to changes to the entire project,
+      // they subscribe to the project's channel on the project's exchange.
+      exchange.broadcastToChannel(msg['exchange'], msg);
     }
-
-    console.log(`Unknown message type: ${msg['type']}`);
+    else {
+      console.log(`Unknown message type: ${msg['type']}`);
+    }
   });
 
   ws.on('close', function () {
@@ -90,5 +90,6 @@ wss.on('connection', function (ws) {
 });
 
 server.listen(port, function () {
+  console.log(`AtomicTessellator - WebSocket Server v0.2.2`);
   console.log(`Listening on port:${port}`);
 });
