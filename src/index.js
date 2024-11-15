@@ -58,7 +58,8 @@ wss.on('connection', function (ws) {
       // to changes to an indivdual object, they subscribe to the object's
       // channel. If they want to subscribe to changes to the entire project,
       // they subscribe to the project's channel on the project's exchange.
-      exchange.broadcastToChannel(msg['exchange'], msg);
+      // data is broadcasted twice because clients are subscribing with exchange=[project_id], channel=[project_id]
+      // exchange.broadcastToChannel(msg['exchange'], msg);
     }
     else {
       console.log(`Unknown message type: ${msg['type']}`);
