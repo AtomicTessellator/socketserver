@@ -94,3 +94,23 @@ server.listen(port, function () {
   console.log(`AtomicTessellator - WebSocket Server v0.2.2`);
   console.log(`Listening on port:${port}`);
 });
+
+// Second app server to respond to health checks
+let app2 = express();
+
+// Add health check endpoints
+app2.get('/', (req, res) => {
+  res.sendStatus(200);
+});
+
+app2.get('/health', (req, res) => {
+  res.sendStatus(200);
+});
+
+app2.get('/healthcheck', (req, res) => {
+  res.sendStatus(200);
+});
+
+app2.listen(80, () => {
+  console.log(`Health check server listening on port:80`);
+});
