@@ -12,6 +12,18 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server });
 const exchangeManager = new ExchangeManager();
 
+app.get('/', (req, res) => {
+  res.sendStatus(200);
+});
+
+app.get('/health', (req, res) => {
+  res.sendStatus(200);
+});
+
+app.get('/healthcheck', (req, res) => {
+  res.sendStatus(200);
+});
+
 wss.on('connection', function (ws) {
   console.log(
     `Connection from ${ws._socket.remoteAddress}:` +
@@ -91,26 +103,10 @@ wss.on('connection', function (ws) {
 });
 
 server.listen(port, function () {
-  console.log(`AtomicTessellator - WebSocket Server v0.2.2`);
-  console.log(`Listening on port:${port}`);
-});
-
-// Second app server to respond to health checks
-let app2 = express();
-
-// Add health check endpoints
-app2.get('/', (req, res) => {
-  res.sendStatus(200);
-});
-
-app2.get('/health', (req, res) => {
-  res.sendStatus(200);
-});
-
-app2.get('/healthcheck', (req, res) => {
-  res.sendStatus(200);
-});
-
-app2.listen(80, () => {
-  console.log(`Health check server listening on port:80`);
+  console.log(`AtomicTessellator - WebSocket Server v0.2.3`);
+  console.log(`Listening on port:5000`);
+  console.log('healthcheks are available at:');
+  console.log(`http://0.0.0.0:${port}/`); 
+  console.log(`http://0.0.0.0:${port}/health`); 
+  console.log(`http://0.0.0.0:${port}/healthcheck`);
 });
