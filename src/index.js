@@ -53,6 +53,10 @@ wss.on('connection', function (ws) {
 
     if (!msg || typeof msg !== 'object') {
       logger.error('Message must be a valid object');
+      ws.send(JSON.stringify({ 
+        type: 'error', 
+        message: 'Message must be a valid object' 
+      }));
       return;
     }
 
@@ -60,20 +64,36 @@ wss.on('connection', function (ws) {
     for (const field of requiredFields) {
       if (!(field in msg)) {
         logger.error(`Missing required field: ${field}`);
+        ws.send(JSON.stringify({ 
+          type: 'error', 
+          message: `Missing required field: ${field}` 
+        }));
         return;
       }
     }
 
     if (typeof msg.exchange !== 'string' || msg.exchange.length > 1000) {
       logger.error('Invalid exchange identifier');
+      ws.send(JSON.stringify({ 
+        type: 'error', 
+        message: 'Invalid exchange identifier' 
+      }));
       return;
     }
     if (typeof msg.channel !== 'string' || msg.channel.length > 1000) {
       logger.error('Invalid channel identifier');
+      ws.send(JSON.stringify({ 
+        type: 'error', 
+        message: 'Invalid channel identifier' 
+      }));
       return;
     }
     if (typeof msg.type !== 'number') {
       logger.error('Message type must be a number');
+      ws.send(JSON.stringify({ 
+        type: 'error', 
+        message: 'Message type must be a number' 
+      }));
       return;
     }
 
