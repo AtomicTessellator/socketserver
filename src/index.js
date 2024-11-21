@@ -11,6 +11,8 @@ const port = 5000;
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 const exchangeManager = new ExchangeManager();
+const LOG_HEARTBEATS = process.env.LOG_HEARTBEATS === 'true';
+const HEARTBEAT_TYPE = 'ping';
 
 app.get('/', (req, res) => {
   res.sendStatus(200);
@@ -31,50 +33,95 @@ wss.on('connection', function (ws) {
   );
 
   ws.on('message', function (data) {
-    const msg = JSON.parse(data);
-
-    /* Get exchange */
-    let exchange = exchangeManager.getExchange(msg['exchange']);
-    if (!exchange) {
-      exchange = exchangeManager.addExchange(msg['exchange']);
+    // Special handling for heartbeat messages
+    if (msg.type === HEARTBEAT_TYPE) {
+      if (LOG_HEARTBEATS) {
+        console.log(`Heartbeat received from ${ws._socket.remoteAddress}`);
+      }
+      return;
     }
 
-    /* Get channel */
-    let channel = exchange.getChannel(msg['channel']);
-    if (!channel) {
+    // Wrap everything in a try-catch to handle malformed messages
+    try {
+      let msg;
       try {
-        channel = exchange.addChannel(msg['channel']);
+        msg = JSON.parse(data);
       } catch (err) {
-        console.log(err);
+        console.error('Invalid JSON message received:', err);
         return;
       }
-    }
 
-    /* Process the message */
-    const client = ws;
+      // Validate required message properties
+      if (!msg || typeof msg !== 'object') {
+        console.error('Message must be a valid object');
+        return;
+      }
 
-    if (msg['type'] == CHANNEL_SUBSCRIBE) {
-      console.log(`Subscribe ${data}`);
-      exchange.subscribeToChannel(msg['channel'], client);
-    }
-    else if (msg['type'] == CHANNEL_UNSUBSCRIBE) {
-      console.log(`Unsubscribe ${data}`);
-      exchange.unsubscribeFromChannel(msg['channel'], client);
-    }
-    else if (msg['type'] >= 1000) {
-      exchange.broadcastToChannel(msg['channel'], msg);
-      // We also broadcast to the channel with the same UUID as the exchange
-      // itself.
-      // In the AtomicT backend and frontend an Exchange is a "Project"
-      // and a channel is an individual object. If a user wants to subscribe
-      // to changes to an indivdual object, they subscribe to the object's
-      // channel. If they want to subscribe to changes to the entire project,
-      // they subscribe to the project's channel on the project's exchange.
-      // data is broadcasted twice because clients are subscribing with exchange=[project_id], channel=[project_id]
-      // exchange.broadcastToChannel(msg['exchange'], msg);
-    }
-    else {
-      console.log(`Unknown message type: ${msg['type']}`);
+      const requiredFields = ['exchange', 'channel', 'type'];
+      for (const field of requiredFields) {
+        if (!(field in msg)) {
+          console.error(`Missing required field: ${field}`);
+          return;
+        }
+      }
+
+      // Validate field types and lengths
+      if (typeof msg.exchange !== 'string' || msg.exchange.length > 1000) {
+        console.error('Invalid exchange identifier');
+        return;
+      }
+      if (typeof msg.channel !== 'string' || msg.channel.length > 1000) {
+        console.error('Invalid channel identifier');
+        return;
+      }
+      if (typeof msg.type !== 'number') {
+        console.error('Message type must be a number');
+        return;
+      }
+
+      /* Get exchange */
+      let exchange = exchangeManager.getExchange(msg['exchange']);
+      if (!exchange) {
+        exchange = exchangeManager.addExchange(msg['exchange']);
+      }
+
+      /* Get channel */
+      let channel = exchange.getChannel(msg['channel']);
+      if (!channel) {
+        try {
+          channel = exchange.addChannel(msg['channel']);
+        } catch (err) {
+          console.log(err);
+          return;
+        }
+      }
+
+      /* Process the message */
+      const client = ws;
+
+      // Validate message type range
+      if (msg.type < 0 || msg.type > 10000) {
+        console.error(`Message type out of valid range: ${msg.type}`);
+        return;
+      }
+
+      if (msg.type === CHANNEL_SUBSCRIBE) {
+        console.log(`Subscribe ${JSON.stringify(msg)}`); // Safer logging
+        exchange.subscribeToChannel(msg.channel, client);
+      }
+      else if (msg.type === CHANNEL_UNSUBSCRIBE) {
+        console.log(`Unsubscribe ${JSON.stringify(msg)}`); // Safer logging
+        exchange.unsubscribeFromChannel(msg.channel, client);
+      }
+      else if (msg.type >= 1000) {
+        // Rate limiting could be added here
+        exchange.broadcastToChannel(msg.channel, msg);
+      }
+      else {
+        console.error(`Unknown message type: ${msg.type}`);
+      }
+    } catch (err) {
+      console.error('Error processing message:', err);
     }
   });
 
