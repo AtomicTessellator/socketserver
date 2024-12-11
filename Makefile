@@ -10,7 +10,9 @@ else
   IMAGE_NAME = qf_socketserver
 endif
 
-DOCKER_REGISTRY = docker.io/atomictessellator
+DOCKER_REGISTRY = atomictessellator
+REGION = australia-southeast1
+PROJECT_ID = production-437300
 IMAGE_TAG = latest
 DOCKERFILE = Dockerfile
 
@@ -33,8 +35,17 @@ push: login
 	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 
+afpush:
+	gcloud config set project $(PROJECT_ID)
+	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(DOCKER_REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(DOCKER_REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+
 # Build and push the Docker image
 build-push: build push
 
 # Clean build and push the Docker image
 build-push-clean: build-clean push
+
+build-afpush:
+	make build
+	make afpush
