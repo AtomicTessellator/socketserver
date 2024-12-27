@@ -13,7 +13,7 @@ ifeq ($(ENV),qf)
 endif
 
 ifeq ($(ENV),beta)
-	PROJECT_ID = michael-test-44444
+	PROJECT_ID = betaatomics
 endif
 
 # ENV validation
@@ -29,10 +29,10 @@ DOCKERFILE = Dockerfile
 
 
 build:
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) --build-arg arch=amd64 .
 
 build-clean:
-	docker build --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	docker build --build-arg arch=amd64 --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 push:
 	gcloud config set project $(PROJECT_ID)
