@@ -1,0 +1,10 @@
+steps:
+  - name: 'gcr.io/kaniko-project/executor:latest'
+    args:
+    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:latest
+    - --cache=true
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+
+
