@@ -2,7 +2,7 @@
 ENV ?= qf
 
 # USAGE: make build-push ENV=prod
-
+# testing cloudbuild
 # Select the appropriate registry based on the environment
 ifeq ($(ENV),prod)
 	PROJECT_ID = production-437300
