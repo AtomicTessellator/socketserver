@@ -1,3 +1,6 @@
+ <h1> MASTER BRANCH HAS BEEN DEPRICATED. PLEASE USE MAIN BRANCH FOR ALL FUTURE DEVELOPMENT</h1>
+ <h1> AN IMAGE WOULDN"T BE BUILD FROM MASTER BRANCH</h1>
+
 # WebSocket Channel Server
 
 A WebSocket server that implements a pub/sub pattern with exchanges and channels. This server allows clients to subscribe to channels within exchanges and broadcast messages to all subscribers.
