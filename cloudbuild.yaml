@@ -1,22 +1,24 @@
 steps:
   - name: 'gcr.io/kaniko-project/executor:latest'
+    id: build_image
     args:
     - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
     - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
     - --cache=true
-- name: google/cloud-sdk:alpine
-    id: Clone repo
+  - name: 'google/cloud-sdk:alpine'
+    id: clone_atomic_t
     entrypoint: git
-    args: ['clone', 'git@github.com:my-org/my-repo.git']
-
-- name: 'google/cloud-sdk:latest'
-  entrypoint: 'sh'
-  args:
-  - -xe
-  - -c
-  - |
-    gcloud deploy apply --file deploy/pipeline.yaml --region=australia-southeast1
-    gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
+    args: ['clone', '--depth 1', 'https://github.com/AtomicTessellator/atomic.t.git']
+  - name: 'google/cloud-sdk:latest'
+    id: deploy_atomic_t
+    entrypoint: 'sh'
+    args:
+    - -xe
+    - -c
+    - |
+      cd atomic.t/GKE-Production/socketserver
+      gcloud deploy apply --file deploy/pipeline.yaml --region=australia-southeast1
+      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
