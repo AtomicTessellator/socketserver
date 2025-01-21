@@ -49,6 +49,7 @@ steps:
       --region=$LOCATION \
       --skaffold-file=skaffold.yaml
 
+
 options:
   logging: CLOUD_LOGGING_ONLY
 availableSecrets:
