@@ -38,9 +38,10 @@ steps:
     - -c
     - |
       ls -lat
-      cd atomic.t/GKE-Production/socketserver
-#      gcloud deploy apply --file deploy/pipeline.yaml --region=australia-southeast1
-#      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
+      cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
+      gcloud deploy apply --file delivery_pipeline/pipeline.yaml --region=australia-southeast1
+      cd atomic.t/GKE-Production/socketserver/
+      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
