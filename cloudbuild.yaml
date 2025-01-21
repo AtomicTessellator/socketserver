@@ -5,17 +5,16 @@ steps:
 #    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
 #    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
 #    - --cache=true
-  - name: 'google/cloud-sdk:alpine'
+  - name: 'google/cloud-sdk:latest'
     id: clone_atomic_t
-    entrypoint: git
+    entrypoint: sh
     args: 
-    - clone
-    - '--depth'
-    - '1'
-    - '--single-branch'
-    - '--branch'
-    - 'master'
-    - 'git@github.com:AtomicTessellator/atomic.t.git'
+    - -xe
+    - -c
+    - |
+      mkdir -p ~/.ssh
+      ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 
+      git clone --depth 1 --single-branch --branch master git@github.com:AtomicTessellator/atomic.t.git
   - name: 'google/cloud-sdk:latest'
     id: deploy_atomic_t
     entrypoint: 'sh'
