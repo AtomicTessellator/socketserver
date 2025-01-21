@@ -2,8 +2,8 @@ steps:
   - name: 'gcr.io/kaniko-project/executor:latest'
     id: build_image
     args:
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
+    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:$SHORT_SHA
+    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:$BRANCH_NAME
     - --cache=true
 
   - name: 'gcr.io/cloud-builders/git'
@@ -22,7 +22,7 @@ steps:
 
   - name: 'gcr.io/cloud-builders/git'
     id: clone_atomic_t
-    entrypoint: 'sh'
+    entrypoint: 'bash'
     args:
     - -c
     - |
@@ -41,7 +41,12 @@ steps:
       ls -lat
       cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
       cd atomic.t/GKE-Production/socketserver/
-      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
+      gcloud deploy releases create \
+      'socketserver-${SHORT_SHA}' \
+      --delivery-pipeline=clusters-pipeline \
+      --images=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA} \
+      --region=$LOCATION \
+      --skaffold-file=skaffold.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
