@@ -8,7 +8,7 @@ steps:
   - name: 'google/cloud-sdk:alpine'
     id: clone_atomic_t
     entrypoint: git
-    args: ['clone', '--depth 1', 'https://github.com/AtomicTessellator/atomic.t.git']
+    args: ['clone', '--depth', '1', 'https://github.com/AtomicTessellator/atomic.t.git']
   - name: 'google/cloud-sdk:latest'
     id: deploy_atomic_t
     entrypoint: 'sh'
