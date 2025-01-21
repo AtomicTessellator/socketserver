@@ -39,12 +39,13 @@ steps:
     - -c
     - |
       ls -lat
+      echo "$REPO_NAME=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA}"
       cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
       cd atomic.t/GKE-Production/socketserver/
       gcloud deploy releases create \
       'socketserver-${SHORT_SHA}' \
       --delivery-pipeline=clusters-pipeline \
-      --images=australia-southeast1-docker.pkg.dev/buildfactory/atomictessellator/socketserver:staging=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA} \
+      --images=$REPO_NAME=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA} \
       --region=$LOCATION \
       --skaffold-file=skaffold.yaml
 
