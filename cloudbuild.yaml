@@ -25,6 +25,9 @@ steps:
     args:
     - clone
     - --recurse-submodules
+    - --depth 1
+    - --single-branch
+    - --branch master
     - git@github.com:AtomicTessellator/atomic.t.git
     volumes:
     - name: 'ssh'
@@ -39,7 +42,7 @@ steps:
     - |
       ls -lat
       cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
-      gcloud deploy apply --file atomic.t/GKE-Production/delivery_pipeline/pipeline.yaml --region=australia-southeast1
+#      gcloud deploy apply --file atomic.t/GKE-Production/delivery_pipeline/pipeline.yaml --region=australia-southeast1
       cd atomic.t/GKE-Production/socketserver/
       gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
 
