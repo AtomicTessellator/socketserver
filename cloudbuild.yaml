@@ -1,10 +1,10 @@
 steps:
-  - name: 'gcr.io/kaniko-project/executor:latest'
-    id: build_image
-    args:
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
-    - --cache=true
+#  - name: 'gcr.io/kaniko-project/executor:latest'
+#    id: build_image
+#    args:
+#    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
+#    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
+#    - --cache=true
   - name: 'google/cloud-sdk:alpine'
     id: clone_atomic_t
     entrypoint: git
@@ -12,7 +12,10 @@ steps:
     - clone
     - '--depth'
     - '1'
-    - 'https://github.com/AtomicTessellator/atomic.t.git'
+    - '--single-branch'
+    - '--branch'
+    - 'master'
+    - 'git@github.com:AtomicTessellator/atomic.t.git'
   - name: 'google/cloud-sdk:latest'
     id: deploy_atomic_t
     entrypoint: 'sh'
