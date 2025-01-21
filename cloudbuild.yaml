@@ -1,10 +1,10 @@
 steps:
-#  - name: 'gcr.io/kaniko-project/executor:latest'
-#    id: build_image
-#    args:
-#    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
-#    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
-#    - --cache=true
+  - name: 'gcr.io/kaniko-project/executor:latest'
+    id: build_image
+    args:
+    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
+    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
+    - --cache=true
 
   - name: 'gcr.io/cloud-builders/git'
     secretEnv: ['SSH_KEY']
@@ -39,7 +39,7 @@ steps:
     - |
       ls -lat
       cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
-      gcloud deploy apply --file delivery_pipeline/pipeline.yaml --region=australia-southeast1
+      gcloud deploy apply --file atomic.t/GKE-Production/delivery_pipeline/pipeline.yaml --region=australia-southeast1
       cd atomic.t/GKE-Production/socketserver/
       gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
 
