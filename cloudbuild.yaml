@@ -5,26 +5,46 @@ steps:
 #    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
 #    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
 #    - --cache=true
-  - name: 'google/cloud-sdk:latest'
-    id: clone_atomic_t
-    entrypoint: sh
-    args: 
-    - -xe
+
+  - name: 'gcr.io/cloud-builders/git'
+    secretEnv: ['SSH_KEY']
+    entrypoint: 'bash'
+    id: setup_ssh
+    args:
     - -c
     - |
-      mkdir -p ~/.ssh
-      ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 
-      git clone --depth 1 --single-branch --branch master git@github.com:AtomicTessellator/atomic.t.git
-  - name: 'google/cloud-sdk:latest'
+      echo "$$SSH_KEY" >> /root/.ssh/id_rsa
+      chmod 400 /root/.ssh/id_rsa
+      ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+  - name: 'gcr.io/cloud-builders/git'
+    id: clone_atomic_t
+    args:
+    - clone
+    - --recurse-submodules
+    - git@github.com:AtomicTessellator/atomic.t.git
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+  - name: 'gcr.io/cloud-builders/gcloud'
     id: deploy_atomic_t
     entrypoint: 'sh'
     args:
     - -xe
     - -c
     - |
+      ls -lat
       cd atomic.t/GKE-Production/socketserver
-      gcloud deploy apply --file deploy/pipeline.yaml --region=australia-southeast1
-      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
+#      gcloud deploy apply --file deploy/pipeline.yaml --region=australia-southeast1
+#      gcloud deploy releases create 'socketserver-${SHORT_SHA}' --delivery-pipeline=clusters-pipeline --region=australia-southeast1 --skaffold-file=skaffold.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
+availableSecrets:
+  secretManager:
+  - versionName: projects/buildfactory/secrets/atomict-gitrepo/versions/latest
+    env: 'SSH_KEY'
