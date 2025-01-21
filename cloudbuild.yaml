@@ -44,7 +44,7 @@ steps:
       gcloud deploy releases create \
       'socketserver-${SHORT_SHA}' \
       --delivery-pipeline=clusters-pipeline \
-      --images=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA} \
+      --images=australia-southeast1-docker.pkg.dev/buildfactory/atomictessellator/socketserver:staging=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/$REPO_NAME:${SHORT_SHA} \
       --region=$LOCATION \
       --skaffold-file=skaffold.yaml
 
