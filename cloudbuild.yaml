@@ -26,7 +26,7 @@ steps:
     args:
     - -c
     - |
-      git clone --recurse-submodules --depth 1 --single-branch --branch master git@github.com:AtomicTessellator/atomic.t.git
+      git clone --recurse-submodules --depth 1 --single-branch --branch kustomize git@github.com:AtomicTessellator/atomic.t.git
     volumes:
     - name: 'ssh'
       path: /root/.ssh
