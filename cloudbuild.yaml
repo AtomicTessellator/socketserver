@@ -22,13 +22,11 @@ steps:
 
   - name: 'gcr.io/cloud-builders/git'
     id: clone_atomic_t
+    entrypoint: 'sh'
     args:
-    - clone
-    - --recurse-submodules
-    - --depth 1
-    - --single-branch
-    - --branch master
-    - git@github.com:AtomicTessellator/atomic.t.git
+    - -c
+    - |
+      git clone --recurse-submodules --depth 1 --single-branch --branch master git@github.com:AtomicTessellator/atomic.t.git
     volumes:
     - name: 'ssh'
       path: /root/.ssh
