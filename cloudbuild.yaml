@@ -46,7 +46,7 @@ steps:
       --images=${_IMAGE_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} \
       --region=${LOCATION} \
       --skaffold-file=skaffold.yaml \
-      --t0-target=beta-cluster
+      --to-target=beta-cluster
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: add_branch_tag
