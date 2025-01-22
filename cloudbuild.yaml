@@ -57,10 +57,11 @@ steps:
       gcloud container images add-tag ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${SHORT_SHA} ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${BRANCH_NAME}
     waitFor:
     - deploy_atomic_t
-    
+
 options:
   logging: CLOUD_LOGGING_ONLY
 availableSecrets:
   secretManager:
   - versionName: projects/buildfactory/secrets/atomict-gitrepo/versions/latest
     env: 'SSH_KEY'
+#test
