@@ -2,7 +2,7 @@ steps:
   - name: 'gcr.io/kaniko-project/executor:latest'
     id: build_image
     args:
-    - --destination=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${SHORT_SHA}
+    - --destination=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA}
     - --cache=true
 
   - name: 'gcr.io/cloud-builders/git'
@@ -38,15 +38,15 @@ steps:
     - -c
     - |
       ls -lat
-      echo "${REPO_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${SHORT_SHA}"
-      cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/socketserver/skaffold.yaml
-      cd atomic.t/GKE-Production/socketserver/
+      cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/${REPO_NAME}/skaffold.yaml
+      cd atomic.t/GKE-Production/${REPO_NAME}/
       gcloud deploy releases create \
-      'socketserver-${SHORT_SHA}' \
+      '${REPO_NAME}-${SHORT_SHA}' \
       --delivery-pipeline=clusters-pipeline \
-      --images=${REPO_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${SHORT_SHA} \
+      --images=${_IMAGE_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} \
       --region=${LOCATION} \
-      --skaffold-file=skaffold.yaml
+      --skaffold-file=skaffold.yaml \
+      --t0-target=beta-cluster
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: add_branch_tag
@@ -54,7 +54,7 @@ steps:
     args:
     - -c
     - |
-      gcloud container images add-tag ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${SHORT_SHA} ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${REPO_NAME}:${BRANCH_NAME}
+      gcloud container images add-tag ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${BRANCH_NAME}
     waitFor:
     - deploy_atomic_t
 
@@ -64,4 +64,5 @@ availableSecrets:
   secretManager:
   - versionName: projects/buildfactory/secrets/atomict-gitrepo/versions/latest
     env: 'SSH_KEY'
-#test
+substitutions:
+  _IMAGE_NAME: ${REPO_NAME}
