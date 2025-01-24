@@ -41,12 +41,11 @@ steps:
       cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/${REPO_NAME}/skaffold.yaml
       cd atomic.t/GKE-Production/${REPO_NAME}/
       gcloud deploy releases create \
-      '${_IMAGE_NAME}-${SHORT_SHA}' \
+      '${_IMAGE_NAME}-${BRANCH_NAME}:${SHORT_SHA}' \
       --delivery-pipeline=clusters-pipeline \
       --images=${_IMAGE_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} \
       --region=${LOCATION} \
-      --skaffold-file=skaffold.yaml \
-      --to-target=beta-cluster
+      --skaffold-file=skaffold.yaml
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: add_branch_tag
