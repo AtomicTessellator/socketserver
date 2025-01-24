@@ -1,11 +1,68 @@
 steps:
   - name: 'gcr.io/kaniko-project/executor:latest'
+    id: build_image
     args:
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$SHORT_SHA
-    - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/atomictessellator/socketserver:$BRANCH_NAME
+    - --destination=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA}
     - --cache=true
+
+  - name: 'gcr.io/cloud-builders/git'
+    secretEnv: ['SSH_KEY']
+    entrypoint: 'bash'
+    id: setup_ssh
+    args:
+    - -c
+    - |
+      echo "$$SSH_KEY" >> /root/.ssh/id_rsa
+      chmod 400 /root/.ssh/id_rsa
+      ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+  - name: 'gcr.io/cloud-builders/git'
+    id: clone_atomic_t
+    entrypoint: 'bash'
+    args:
+    - -c
+    - |
+      git clone --recurse-submodules --depth 1 --single-branch --branch ${_ATOMICT_BRANCH} git@github.com:AtomicTessellator/atomic.t.git
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: deploy_atomic_t
+    entrypoint: 'sh'
+    args:
+    - -xe
+    - -c
+    - |
+      ls -lat
+      cp atomic.t/GKE-Production/delivery_pipeline/skaffold.yaml atomic.t/GKE-Production/${REPO_NAME}/skaffold.yaml
+      cd atomic.t/GKE-Production/${REPO_NAME}/
+      gcloud deploy releases create \
+      '${_IMAGE_NAME}-${BRANCH_NAME}-${SHORT_SHA}' \
+      --delivery-pipeline=clusters-pipeline \
+      --images=${_IMAGE_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} \
+      --region=${LOCATION} \
+      --skaffold-file=skaffold.yaml
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: add_branch_tag
+    entrypoint: 'sh'
+    args:
+    - -c
+    - |
+      gcloud container images add-tag ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${BRANCH_NAME}
+    waitFor:
+    - deploy_atomic_t
+
 options:
   logging: CLOUD_LOGGING_ONLY
-
-
-
+availableSecrets:
+  secretManager:
+  - versionName: projects/buildfactory/secrets/atomict-gitrepo/versions/latest
+    env: 'SSH_KEY'
+substitutions:
+  _IMAGE_NAME: ${REPO_NAME}
+  _ATOMICT_BRANCH: master
