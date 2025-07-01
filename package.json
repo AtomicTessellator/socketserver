@@ -13,20 +13,21 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cross-spawn": "^7.0.5",
     "dataclass": "^2.1.1",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "winston": "^3.17.0",
-    "ws": "^8.17.1"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
+    "@babel/core": "^7.27.7",
+    "@babel/preset-env": "^7.27.2",
     "babel-jest": "^29.7.0",
-    "eslint": "^7.30.0",
+    "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-import": "^2.32.0",
     "jest": "^29.7.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.10"
   },
   "jest": {
     "transform": {
