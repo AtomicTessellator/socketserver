@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "cross-spawn": "^7.0.5",
+    "cross-spawn": "^7.0.6",
     "dataclass": "^2.1.1",
     "express": "^4.21.2",
     "winston": "^3.17.0",

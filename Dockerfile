@@ -1,4 +1,4 @@
-FROM node:iron-slim
+FROM node:22-alpine3.21
 
 # Create app directory
 RUN mkdir -p /app
