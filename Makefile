@@ -42,3 +42,5 @@ push:
 build-push: build push
 
 build-push-clean: build-clean push
+
+# vuln scan
