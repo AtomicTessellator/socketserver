@@ -1,9 +1,28 @@
 steps:
-  - name: 'gcr.io/kaniko-project/executor:latest'
+  - name: 'gcr.io/cloud-builders/docker'
+    id: pull_cache
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull $LOCATION-docker.pkg.dev/$PROJECT_ID/$_REGISTRY_NAME/$_IMAGE_NAME:$BRANCH_NAME || exit 0']
+    waitFor: ['-']
+
+  - name: 'gcr.io/cloud-builders/docker'
     id: build_image
-    args:
-    - --destination=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA}
-    - --cache=true
+    args: [
+              'build',
+              '--file', 'Dockerfile',
+              '--platform', 'linux/amd64',
+              '-t', '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REGISTRY_NAME}/${_IMAGE_NAME}:$SHORT_SHA',
+              '--cache-from', '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REGISTRY_NAME}/${_IMAGE_NAME}:$BRANCH_NAME',
+              '.'
+          ]
+    waitFor:
+    - pull_cache
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push_image
+    args: ['push', '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REGISTRY_NAME}/${_IMAGE_NAME}:$SHORT_SHA']
+    waitFor:
+    - build_image
 
   - name: 'gcr.io/cloud-builders/git'
     secretEnv: ['SSH_KEY']
@@ -18,6 +37,7 @@ steps:
     volumes:
     - name: 'ssh'
       path: /root/.ssh
+    waitFor: ['-']
 
   - name: 'gcr.io/cloud-builders/git'
     id: clone_atomic_t
@@ -29,6 +49,8 @@ steps:
     volumes:
     - name: 'ssh'
       path: /root/.ssh
+    waitFor:
+    - setup_ssh
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: deploy_atomic_t
@@ -46,6 +68,9 @@ steps:
       --images=${_IMAGE_NAME}=${LOCATION}-docker.pkg.dev/${PROJECT_ID}/atomictessellator/${_IMAGE_NAME}:${SHORT_SHA} \
       --region=${LOCATION} \
       --skaffold-file=skaffold.yaml
+    waitFor:
+    - push_image
+    - clone_atomic_t
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: add_branch_tag
@@ -66,3 +91,6 @@ availableSecrets:
 substitutions:
   _IMAGE_NAME: ${REPO_NAME}
   _ATOMICT_BRANCH: master
+  _REGISTRY_NAME: atomictessellator
+images: 
+- ${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REGISTRY_NAME}/${_IMAGE_NAME}:${SHORT_SHA}
