@@ -1,0 +1,67 @@
+name: Enforce merge policy
+
+on:
+  pull_request:
+    branches: [main, staging]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source-into-main:
+    name: "SOC: verify merge source is staging"
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block non-staging merges into main
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "::error::SOC/ISO 27001 policy violation: pull requests from forks cannot be merged into 'main'."
+            echo "Source repository: ${{ github.event.pull_request.head.repo.full_name }}"
+            exit 1
+          fi
+          if [ "${{ github.head_ref }}" != "staging" ]; then
+            echo "::error::SOC/ISO 27001 policy violation: only the 'staging' branch may be merged into 'main'."
+            echo "Attempted source branch: ${{ github.head_ref }}"
+            exit 1
+          fi
+
+  verify-source-into-staging:
+    name: "SOC: verify merge source is not main"
+    if: github.base_ref == 'staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block main merges into staging
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "::error::SOC/ISO 27001 policy violation: pull requests from forks cannot be merged into 'staging'."
+            echo "Source repository: ${{ github.event.pull_request.head.repo.full_name }}"
+            exit 1
+          fi
+          if [ "${{ github.head_ref }}" == "main" ]; then
+            echo "::error::SOC/ISO 27001 policy violation: the 'main' branch may not be merged into 'staging'."
+            echo "Attempted source branch: ${{ github.head_ref }}"
+            exit 1
+          fi
+
+  block-cloudbuild-into-staging:
+    name: "SOC: no cloudbuild.yaml change into staging"
+    if: github.base_ref == 'staging'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Block cloudbuild.yaml changes into staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename')
+          if echo "$files" | grep -qx 'cloudbuild.yaml'; then
+            echo "::error::SOC policy: cloudbuild.yaml may not be changed via PR into 'staging'. Requires org-admin bypass."
+            exit 1
+          fi
+          echo "No cloudbuild.yaml changes. OK."

@@ -1,0 +1,31 @@
+name: Cloud Build gate
+
+on:
+  pull_request:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+
+jobs:
+  build:
+    name: "SOC: socketserver build"
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          CHECK: socketserver-pr (buildfactory)
+          SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          for i in $(seq 1 60); do
+            c=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
+              --jq "[.check_runs[] | select(.name == \"$CHECK\")] | last | .conclusion // empty")
+            [ "$c" = "success" ] && exit 0
+            [ "$c" = "failure" ] && exit 1
+            echo "waiting for $CHECK ($i/60): ${c:-pending}"
+            sleep 30
+          done
+          exit 1
