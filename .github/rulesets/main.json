@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/github-ruleset.json",
+  "_meta": {
+    "compliance": "SOC 2 / ISO 27001",
+    "description": "Main branch protection — merges allowed only from staging; PR approval must pass. No Cloud Build gate: the only build trigger is manual (public repo), so no PR check exists to require."
+  },
+  "name": "SOC: main branch protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [
+    {
+      "actor_type": "OrganizationAdmin",
+      "bypass_mode": "pull_request"
+    }
+  ],
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "creation" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": true,
+        "required_review_thread_resolution": true,
+        "allowed_merge_methods": ["squash"]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          {
+            "context": "SOC: verify merge source is staging"
+          }
+        ]
+      }
+    }
+  ]
+}
